@@ -25,6 +25,11 @@ void Command::joyCallback(joyMsg joy_msg){
 	prev_button = joy_msg.buttons[0];
 }
 
+void Command::odomtryCallback(VehicleOdometry odom_msg){
+	RCLCPP_INFO(this->get_logger(), "(%.2f, %.2f, %.2f)", odom_msg.position[0],
+					odom_msg.position[1], odom_msg.position[2]);
+}
+
 void Command::setPosition(joyMsg new_data){
 	if(!flags.is_arm) { return; }
 	set_point.x += new_data.axes[4] * coef;
@@ -63,6 +68,8 @@ void Command::initTopic(){
 
 	sub.joy = this->create_subscription<joyMsg>("/joy", 10, 
 				std::bind(&Command::joyCallback, this, _1));
+	sub.vehicle_odomtry = this->create_subscription<VehicleOdometry>("fmu/out/vehicle_odometry", 10,
+							std::bind(&Command::odomtryCallback, this, _1));
 }
 
 void Command::initParam(){

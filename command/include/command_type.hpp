@@ -8,6 +8,7 @@
 #include <px4_msgs/msg/trajectory_setpoint.hpp>
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
+#include <px4_msgs/msg/vehicle_odometry.hpp>
 
 using namespace px4_msgs::msg;
 using joyMsg = sensor_msgs::msg::Joy;
@@ -20,6 +21,7 @@ typedef struct{
 
 typedef struct{
     rclcpp::Subscription<joyMsg>::SharedPtr joy;
+    rclcpp::Subscription<VehicleOdometry>::SharedPtr vehicle_odomtry;
 }Sub_t;
 
 typedef union{

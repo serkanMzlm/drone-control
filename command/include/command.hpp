@@ -16,13 +16,16 @@ private:
     Satate_t set_point {0.0, 0.0, 0.0, 0.0};
 public:
     Command();
+
     void joyCallback(joyMsg joy_msg);
+    void odomtryCallback(VehicleOdometry odom_msg);
+       
     void resetData(Data_t select);
     void initTopic();
     void initParam();
     void setPosition(joyMsg new_data);
     void setTakeoff();
-    
+
     void controlMode();
 	void trajectorySetpoint(Satate_t new_data);
 	void vehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0);
