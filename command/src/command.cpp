@@ -16,21 +16,25 @@ void Command::joyCallback(joyMsg joy_msg){
 		this->vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
 		armDisarm();
 	}	
-
-	if(flags.is_arm){
-		set_point.x += joy_msg.axes[4] * coef;
-		set_point.y += joy_msg.axes[3] * coef;
-		set_point.z += joy_msg.axes[1] * coef;
-		set_point.yaw -= joy_msg.axes[0] * coef;
-
-		controlMode();	
-		trajectorySetpoint(set_point);	
-	}
-
+	setPosition(joy_msg);
+	controlMode();	
+	trajectorySetpoint(set_point);	
 	RCLCPP_DEBUG(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
 				set_point.x, set_point.y, set_point.z, set_point.yaw);
 
 	prev_button = joy_msg.buttons[0];
+}
+
+void Command::setPosition(joyMsg new_data){
+	if(!flags.is_arm) { return; }
+	set_point.x += new_data.axes[4] * coef;
+	set_point.y += new_data.axes[3] * coef;
+	set_point.z += new_data.axes[1] * coef;
+	set_point.yaw -= new_data.axes[0] * coef;
+}
+
+void Command::setTakeoff(){
+
 }
 
 void Command::resetData(Data_t select){
@@ -53,12 +57,11 @@ void Command::resetData(Data_t select){
 }
 
 void Command::initTopic(){
-	// Publisher
-	px4_mode_pub_ = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
-	setpoint_pub_ = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
-	vehicle_command_pub_ = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
-	// Subscription
-	joySub_ = this->create_subscription<joyMsg>("/joy", 10, 
+	pub.mode = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
+	pub.setpoint = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
+	pub.vehicle_command = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
+
+	sub.joy = this->create_subscription<joyMsg>("/joy", 10, 
 				std::bind(&Command::joyCallback, this, _1));
 }
 
@@ -81,7 +84,7 @@ void Command::controlMode(){
 	msg.attitude     = false;
 	msg.body_rate    = false;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-	px4_mode_pub_->publish(msg);
+	pub.mode->publish(msg);
 }
 
 void Command::trajectorySetpoint(Satate_t new_data){
@@ -89,7 +92,7 @@ void Command::trajectorySetpoint(Satate_t new_data){
 	msg.position = {new_data.x, new_data.y, -new_data.z};
 	msg.yaw = new_data.yaw;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-	setpoint_pub_->publish(msg);
+	pub.setpoint->publish(msg);
 }
 
 void Command::vehicleCommand(uint16_t command, float param1, float param2){
@@ -103,7 +106,7 @@ void Command::vehicleCommand(uint16_t command, float param1, float param2){
 	msg.source_component = 1;
 	msg.from_external = true;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-	vehicle_command_pub_->publish(msg);
+	pub.vehicle_command->publish(msg);
 }
     
 int main(int argc, char ** args){
