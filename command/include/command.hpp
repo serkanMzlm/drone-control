@@ -20,6 +20,7 @@ public:
     void joyCallback(joyMsg joy_msg);
     void sensorListenerCallback(sensorCombinedMsg::UniquePtr sensor_msg);
     void localPosCallback(localPosMsg::UniquePtr pos_msg);
+    void odomCallback(odomMsg::UniquePtr odom_msg);
        
     void resetData(Data_t select);
     void initTopic();

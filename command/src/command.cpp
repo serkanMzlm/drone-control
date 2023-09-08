@@ -5,13 +5,6 @@ using namespace std::placeholders;
 
 Command::Command(): Node("command_node") {
 	this->declare_parameter<bool>("is_joy", true);
-
-	rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
-	auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
-	sub.sensor_combine = this->create_subscription<sensorCombinedMsg>("/fmu/out/sensor_combined", qos,
-							std::bind(&Command::sensorListenerCallback, this, _1));
-	sub.local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", qos,
-							std::bind(&Command::localPosCallback, this, _1));
 	initParam();
 	initTopic();
 
@@ -52,10 +45,15 @@ void Command::sensorListenerCallback(sensorCombinedMsg::UniquePtr sensor_msg){
 }
 
 void Command::localPosCallback(localPosMsg::UniquePtr pos_msg){
-	// RCLCPP_INFO(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
-	// 			pos_msg->x, pos_msg->y, pos_msg->z, pos_msg->heading);	
-				RCLCPP_INFO(this->get_logger(), "--------");	
+	RCLCPP_INFO(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
+				pos_msg->x, pos_msg->y, pos_msg->z, pos_msg->heading);	
 }
+
+void Command::odomCallback(odomMsg::UniquePtr odom_msg){
+	RCLCPP_INFO(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f",
+				odom_msg->position[0], odom_msg->position[1], odom_msg->position[2]);	
+}
+
 
 void Command::setPosition(joyMsg new_data){
 	if(!flags.is_arm) { return; }
@@ -89,16 +87,21 @@ void Command::resetData(Data_t select){
 }
 
 void Command::initTopic(){
+	rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
+	auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
+
 	pub.mode = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
 	pub.setpoint = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
 	pub.vehicle_command = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
 
 	sub.joy = this->create_subscription<joyMsg>("/joy", 10, 
-				std::bind(&Command::joyCallback, this, _1));
-	// sub.sensor_combine = this->create_subscription<sensorCombinedMsg>("/fmu/out/sensor_combined", 10,
-	// 						std::bind(&Command::sensorListenerCallback, this, _1));
-	// sub.local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", 10,
+				std::bind(&Command::joyCallback, this, _1));		
+	sub.sensor_combine = this->create_subscription<sensorCombinedMsg>("/fmu/out/sensor_combined", qos,
+							std::bind(&Command::sensorListenerCallback, this, _1));
+	// sub.local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", qos,
 	// 						std::bind(&Command::localPosCallback, this, _1));
+	sub.odom = this->create_subscription<odomMsg>("/fmu/out/vehicle_odometry", qos, 
+							std::bind(&Command::odomCallback, this, _1));
 }
 
 void Command::initParam(){
