@@ -9,9 +9,14 @@
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
 #include <px4_msgs/msg/vehicle_odometry.hpp>
+#include <px4_msgs/msg/vehicle_local_position.hpp>
+#include <px4_msgs/msg/sensor_combined.hpp>
 
 using namespace px4_msgs::msg;
 using joyMsg = sensor_msgs::msg::Joy;
+using sensorCombinedMsg = px4_msgs::msg::SensorCombined;
+using localPosMsg = px4_msgs::msg::VehicleLocalPosition;
+using odomMsg = px4_msgs::msg::VehicleOdometry;
 
 typedef struct{
     rclcpp::Publisher<OffboardControlMode>::SharedPtr mode;
@@ -21,7 +26,9 @@ typedef struct{
 
 typedef struct{
     rclcpp::Subscription<joyMsg>::SharedPtr joy;
-    rclcpp::Subscription<VehicleOdometry>::SharedPtr vehicle_odomtry;
+    rclcpp::Subscription<sensorCombinedMsg>::SharedPtr sensor_combine;
+    rclcpp::Subscription<localPosMsg>::SharedPtr local_pos;
+    rclcpp::Subscription<odomMsg>::SharedPtr odom;
 }Sub_t;
 
 typedef union{

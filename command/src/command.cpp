@@ -1,12 +1,20 @@
 #include "command.hpp"
 #include "numeric_transform.hpp"
-
+// #define DEBUG_SENSOR
 using namespace std::placeholders;
 
 Command::Command(): Node("command_node") {
 	this->declare_parameter<bool>("is_joy", true);
+
+	rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
+	auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
+	sub.sensor_combine = this->create_subscription<sensorCombinedMsg>("/fmu/out/sensor_combined", qos,
+							std::bind(&Command::sensorListenerCallback, this, _1));
+	sub.local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", qos,
+							std::bind(&Command::localPosCallback, this, _1));
 	initParam();
 	initTopic();
+
 	RCLCPP_DEBUG(this->get_logger(), "Command Started.");
 }
 
@@ -25,9 +33,28 @@ void Command::joyCallback(joyMsg joy_msg){
 	prev_button = joy_msg.buttons[0];
 }
 
-void Command::odomtryCallback(VehicleOdometry odom_msg){
-	RCLCPP_INFO(this->get_logger(), "(%.2f, %.2f, %.2f)", odom_msg.position[0],
-					odom_msg.position[1], odom_msg.position[2]);
+void Command::sensorListenerCallback(sensorCombinedMsg::UniquePtr sensor_msg){
+#ifdef DEBUG_SENSOR
+	std::cout << "\n\n\n";
+	std::cout << "RECEIVED SENSOR COMBINED DATA"   << std::endl;
+	std::cout << "============================="   << std::endl;
+	std::cout << "ts: "          << sensor_msg->timestamp    << std::endl;
+	std::cout << "gyro_rad[0]: " << sensor_msg->gyro_rad[0]  << std::endl;
+	std::cout << "gyro_rad[1]: " << sensor_msg->gyro_rad[1]  << std::endl;
+	std::cout << "gyro_rad[2]: " << sensor_msg->gyro_rad[2]  << std::endl;
+	std::cout << "gyro_integral_dt: " << sensor_msg->gyro_integral_dt << std::endl;
+	std::cout << "accelerometer_timestamp_relative: " << sensor_msg->accelerometer_timestamp_relative << std::endl;
+	std::cout << "accelerometer_m_s2[0]: " << sensor_msg->accelerometer_m_s2[0] << std::endl;
+	std::cout << "accelerometer_m_s2[1]: " << sensor_msg->accelerometer_m_s2[1] << std::endl;
+	std::cout << "accelerometer_m_s2[2]: " << sensor_msg->accelerometer_m_s2[2] << std::endl;
+	std::cout << "accelerometer_integral_dt: " << sensor_msg->accelerometer_integral_dt << std::endl;
+#endif
+}
+
+void Command::localPosCallback(localPosMsg::UniquePtr pos_msg){
+	// RCLCPP_INFO(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
+	// 			pos_msg->x, pos_msg->y, pos_msg->z, pos_msg->heading);	
+				RCLCPP_INFO(this->get_logger(), "--------");	
 }
 
 void Command::setPosition(joyMsg new_data){
@@ -68,8 +95,10 @@ void Command::initTopic(){
 
 	sub.joy = this->create_subscription<joyMsg>("/joy", 10, 
 				std::bind(&Command::joyCallback, this, _1));
-	sub.vehicle_odomtry = this->create_subscription<VehicleOdometry>("fmu/out/vehicle_odometry", 10,
-							std::bind(&Command::odomtryCallback, this, _1));
+	// sub.sensor_combine = this->create_subscription<sensorCombinedMsg>("/fmu/out/sensor_combined", 10,
+	// 						std::bind(&Command::sensorListenerCallback, this, _1));
+	// sub.local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", 10,
+	// 						std::bind(&Command::localPosCallback, this, _1));
 }
 
 void Command::initParam(){
