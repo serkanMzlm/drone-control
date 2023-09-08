@@ -39,7 +39,7 @@ typedef union{
         float yaw;
     };
     float state[4];
-} Satate_t; 
+} State_t; 
 
 typedef struct{
     bool is_arm;
