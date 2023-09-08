@@ -16,10 +16,16 @@ void Command::joyCallback(joyMsg joy_msg){
 	if(flags.is_press){
 		this->vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
 		armDisarm();
-	}	
-	setPosition(joy_msg);
-	controlMode();	
-	trajectorySetpoint(set_point);	
+	}
+	if(joy_msg.buttons[1]){
+		flags.is_land = true;
+		this->vehicleCommand(VehicleCommand::VEHICLE_CMD_NAV_VTOL_LAND);
+	}
+	if(!flags.is_land){
+		setPosition(joy_msg);
+		controlMode();	
+		trajectorySetpoint(set_point);	
+	}
 	RCLCPP_DEBUG(this->get_logger(), "SP x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
 				set_point.x, set_point.y, set_point.z, set_point.yaw);
 

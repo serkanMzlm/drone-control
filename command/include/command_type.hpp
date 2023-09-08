@@ -45,6 +45,8 @@ typedef struct{
     bool is_arm;
     bool is_joy;
     bool is_press;
+    bool is_takeoff;
+    bool is_land;
 } Flag_t;
 
 typedef enum {STATE, ALL_DATA} Data_t;

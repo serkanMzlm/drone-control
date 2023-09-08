@@ -10,7 +10,7 @@ class Command : public rclcpp::Node{
 private:
     Pub_t pub;
     Sub_t sub;
-    Flag_t flags {false, false, false};
+    Flag_t flags {false, false, false, false, false};
     float coef = 1.0f;
     int prev_button = 0;
     State_t set_point {0.0, 0.0, 0.0, 0.0};
