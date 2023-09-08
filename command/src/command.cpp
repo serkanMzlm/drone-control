@@ -20,7 +20,7 @@ void Command::joyCallback(joyMsg joy_msg){
 	setPosition(joy_msg);
 	controlMode();	
 	trajectorySetpoint(set_point);	
-	RCLCPP_DEBUG(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
+	RCLCPP_DEBUG(this->get_logger(), "SP x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
 				set_point.x, set_point.y, set_point.z, set_point.yaw);
 
 	prev_button = joy_msg.buttons[0];
@@ -45,22 +45,27 @@ void Command::sensorListenerCallback(sensorCombinedMsg::UniquePtr sensor_msg){
 }
 
 void Command::localPosCallback(localPosMsg::UniquePtr pos_msg){
-	RCLCPP_INFO(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
+	RCLCPP_DEBUG(this->get_logger(), "state: x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
 				pos_msg->x, pos_msg->y, pos_msg->z, pos_msg->heading);	
+	vec_state.x = pos_msg->x;
+	vec_state.y = pos_msg->y;
+	vec_state.z = pos_msg->z;
+	vec_state.yaw = R2D(pos_msg->heading);
+	// RCLCPP_INFO(this->get_logger(), "%.2f", vec_state.yaw);
 }
 
 void Command::odomCallback(odomMsg::UniquePtr odom_msg){
-	RCLCPP_INFO(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f",
+	RCLCPP_DEBUG(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f",
 				odom_msg->position[0], odom_msg->position[1], odom_msg->position[2]);	
 }
 
 
 void Command::setPosition(joyMsg new_data){
 	if(!flags.is_arm) { return; }
-	set_point.x += new_data.axes[4] * coef;
-	set_point.y += new_data.axes[3] * coef;
-	set_point.z += new_data.axes[1] * coef;
-	set_point.yaw -= new_data.axes[0] * coef;
+	set_point.x = vec_state.x + new_data.axes[4] * coef;
+	set_point.y = vec_state.y + new_data.axes[3] * coef;
+	set_point.z = -vec_state.z + new_data.axes[1] * coef;
+	set_point.yaw = vec_state.yaw + new_data.axes[0];
 }
 
 void Command::setTakeoff(){
@@ -98,8 +103,8 @@ void Command::initTopic(){
 				std::bind(&Command::joyCallback, this, _1));		
 	sub.sensor_combine = this->create_subscription<sensorCombinedMsg>("/fmu/out/sensor_combined", qos,
 							std::bind(&Command::sensorListenerCallback, this, _1));
-	// sub.local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", qos,
-	// 						std::bind(&Command::localPosCallback, this, _1));
+	sub.local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", qos,
+							std::bind(&Command::localPosCallback, this, _1));
 	sub.odom = this->create_subscription<odomMsg>("/fmu/out/vehicle_odometry", qos, 
 							std::bind(&Command::odomCallback, this, _1));
 }
@@ -126,10 +131,10 @@ void Command::controlMode(){
 	pub.mode->publish(msg);
 }
 
-void Command::trajectorySetpoint(Satate_t new_data){
+void Command::trajectorySetpoint(State_t new_data){
  	TrajectorySetpoint msg{};
 	msg.position = {new_data.x, new_data.y, -new_data.z};
-	msg.yaw = new_data.yaw;
+	msg.yaw = D2R(new_data.yaw);
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	pub.setpoint->publish(msg);
 }

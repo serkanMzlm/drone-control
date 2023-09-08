@@ -11,9 +11,10 @@ private:
     Pub_t pub;
     Sub_t sub;
     Flag_t flags {false, false, false};
-    float coef = 0.1f;
+    float coef = 1.0f;
     int prev_button = 0;
-    Satate_t set_point {0.0, 0.0, 0.0, 0.0};
+    State_t set_point {0.0, 0.0, 0.0, 0.0};
+    State_t vec_state;
 public:
     explicit Command();
 
@@ -29,7 +30,7 @@ public:
     void setTakeoff();
 
     void controlMode();
-	void trajectorySetpoint(Satate_t new_data);
+	void trajectorySetpoint(State_t new_data);
 	void vehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void armDisarm();
 };
