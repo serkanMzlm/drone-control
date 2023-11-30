@@ -8,7 +8,7 @@ SensorReader::SensorReader(): Node("sensor_reader_node"){
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
     sub.imu = this->create_subscription<SensorCombinedMsg>("/fmu/out/sensor_combined", qos,
                             std::bind(&SensorReader::readIMUCallback, this, _1));
-    sub.gps = this->create_subscription<SensorGpsdMsg>("/fmu/out/vehicle_gps_position", qos,
+    sub.gps = this->create_subscription<SensorGpsMsg>("/fmu/out/vehicle_gps_position", qos,
                             std::bind(&SensorReader::readGPSCallback, this, _1));
 }
 
@@ -28,7 +28,7 @@ void SensorReader::readIMUCallback(const SensorCombinedMsg::UniquePtr msg){
     }
 }
 
-void SensorReader::readGPSCallback(const SensorGpsdMsg::UniquePtr msg){
+void SensorReader::readGPSCallback(const SensorGpsMsg::UniquePtr msg){
     if(debug_data[GPS]){
         RCLCPP_INFO(this->get_logger(), "RECEIVED GPS DATA");
         RCLCPP_INFO(this->get_logger(), "==================");
@@ -42,6 +42,22 @@ void SensorReader::readGPSCallback(const SensorGpsdMsg::UniquePtr msg){
         RCLCPP_INFO(this->get_logger(), "GPS Down Velocity: %.2f", msg->vel_d_m_s);
         RCLCPP_INFO(this->get_logger(), "Heading : %.2f", msg->heading);
         RCLCPP_INFO(this->get_logger(), "Heading Offset : %.2f", msg->heading_offset);
+    }
+}
+
+void SensorReader::vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg){
+    if(debug_data[VEH_STATUS]){
+        RCLCPP_INFO(this->get_logger(), "RECEIVED VEHICLE STATUS DATA");
+        RCLCPP_INFO(this->get_logger(), "============================");
+        RCLCPP_INFO(this->get_logger(), "The Time to Arm (microseconds): %ld", msg->armed_time);
+        RCLCPP_INFO(this->get_logger(), "The Time to Takeoff (microseconds): %ld", msg->takeoff_time);
+        RCLCPP_INFO(this->get_logger(), "Arm Status: %d", msg->arming_state);
+        RCLCPP_INFO(this->get_logger(), "Selected Mode: %ld", msg->nav_state_timestamp);
+        RCLCPP_INFO(this->get_logger(), "Vehicle Mode: %d", msg->nav_state);
+        RCLCPP_INFO(this->get_logger(), "Number of Detected Faild: %d", msg->failure_detector_status);
+        RCLCPP_INFO(this->get_logger(), "Vehicle Type: %d", msg->vehicle_type);
+        RCLCPP_INFO(this->get_logger(), "Failsafe: %d", msg->failsafe);
+        RCLCPP_INFO(this->get_logger(), "USB Connected: %s", msg->usb_connected ? "true" : "false");
     }
 }
 

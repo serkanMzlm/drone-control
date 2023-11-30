@@ -3,4 +3,5 @@ sensor_reader_node:
     debug:
       - false  #IMU
       - false  #GPS
+      - false  #Vehicle Status
       

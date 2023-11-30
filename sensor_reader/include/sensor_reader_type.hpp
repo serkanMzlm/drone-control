@@ -2,7 +2,7 @@
 #define __SENSOR_READER_TYPE__
 
 typedef enum {
- IMU, GPS
+ IMU, GPS, VEH_STATUS
 } Debug_e;
 
 #endif
