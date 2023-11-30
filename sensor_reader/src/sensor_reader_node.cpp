@@ -10,6 +10,8 @@ SensorReader::SensorReader(): Node("sensor_reader_node"){
                             std::bind(&SensorReader::readIMUCallback, this, _1));
     sub.gps = this->create_subscription<SensorGpsMsg>("/fmu/out/vehicle_gps_position", qos,
                             std::bind(&SensorReader::readGPSCallback, this, _1));
+    sub.vehcile_status = this->create_subscription<VehicleStatusMsg>("/fmu/out/vehicle_status", qos,
+                            std::bind(&SensorReader::vehicleStatusCallback, this, _1));
 }
 
 void SensorReader::initParams(){
@@ -19,6 +21,7 @@ void SensorReader::initParams(){
 
 void SensorReader::readIMUCallback(const SensorCombinedMsg::UniquePtr msg){
     if(debug_data[IMU]){
+        RCLCPP_INFO(this->get_logger(), "=============================");
         RCLCPP_INFO(this->get_logger(), "RECEIVED VEHICLE IMU DATA");
         RCLCPP_INFO(this->get_logger(), "=============================");
         RCLCPP_INFO(this->get_logger(), "Acc: %.2f, %.2f, %.2f ",msg->accelerometer_m_s2[0],
@@ -30,6 +33,7 @@ void SensorReader::readIMUCallback(const SensorCombinedMsg::UniquePtr msg){
 
 void SensorReader::readGPSCallback(const SensorGpsMsg::UniquePtr msg){
     if(debug_data[GPS]){
+        RCLCPP_INFO(this->get_logger(), "==================");
         RCLCPP_INFO(this->get_logger(), "RECEIVED GPS DATA");
         RCLCPP_INFO(this->get_logger(), "==================");
         RCLCPP_INFO(this->get_logger(), "Altitude: %.2lf", msg->alt);
@@ -47,6 +51,7 @@ void SensorReader::readGPSCallback(const SensorGpsMsg::UniquePtr msg){
 
 void SensorReader::vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg){
     if(debug_data[VEH_STATUS]){
+        RCLCPP_INFO(this->get_logger(), "============================");
         RCLCPP_INFO(this->get_logger(), "RECEIVED VEHICLE STATUS DATA");
         RCLCPP_INFO(this->get_logger(), "============================");
         RCLCPP_INFO(this->get_logger(), "The Time to Arm (microseconds): %ld", msg->armed_time);
