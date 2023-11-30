@@ -15,7 +15,7 @@ SensorReader::SensorReader(): Node("sensor_reader_node"){
 }
 
 void SensorReader::initParams(){
-    this->declare_parameter("debug", std::vector<bool> (4, false));
+    this->declare_parameter("debug", std::vector<bool> (ALL_DEBUG, false));
     debug_data = this->get_parameter("debug").as_bool_array();
 }
 
