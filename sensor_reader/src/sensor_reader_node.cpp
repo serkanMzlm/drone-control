@@ -32,8 +32,8 @@ void SensorReader::readGPSCallback(const SensorGpsdMsg::UniquePtr msg){
     if(debug_data[GPS]){
         RCLCPP_INFO(this->get_logger(), "RECEIVED GPS DATA");
         RCLCPP_INFO(this->get_logger(), "==================");
-        RCLCPP_INFO(this->get_logger(), "Altitude: %.2f", msg->alt);
-        RCLCPP_INFO(this->get_logger(), "Altitude: %.2f", msg->alt_ellipsoid);
+        RCLCPP_INFO(this->get_logger(), "Altitude: %.2lf", msg->alt);
+        RCLCPP_INFO(this->get_logger(), "Altitude: %.2lf", msg->alt_ellipsoid);
         RCLCPP_INFO(this->get_logger(), "GPS Horizonal: %.2f", msg->eph);
         RCLCPP_INFO(this->get_logger(), "GPS Vertical: %.2f", msg->epv);
         RCLCPP_INFO(this->get_logger(), "GPS Ground Speed: %.2f", msg->vel_m_s);
