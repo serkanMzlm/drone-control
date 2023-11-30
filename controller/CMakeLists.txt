@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(command)
+project(controller)
 
 set(node_name "${PROJECT_NAME}_node")
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -14,23 +14,18 @@ find_package(px4_msgs REQUIRED)
 
 file(GLOB_RECURSE SRC_FILE ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
-add_executable(command_node ${SRC_FILE})
+add_executable(controller_node ${SRC_FILE})
 
-target_include_directories(command_node PRIVATE include)
-ament_target_dependencies(command_node 
+target_include_directories(controller_node PRIVATE include)
+ament_target_dependencies(controller_node 
   rclcpp
   px4_msgs
   sensor_msgs
 )
 
 install(TARGETS
-  command_node 
+  controller_node 
   DESTINATION lib/${PROJECT_NAME}
-)
-
-install(DIRECTORY 
-  launch
-  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_package()
