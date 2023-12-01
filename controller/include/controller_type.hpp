@@ -19,7 +19,7 @@
 #define VEL_COEF_Y 1.0f
 #define VEL_COEF_Z 1.0f
 
-#define YAW_COEFF 0.25f
+#define YAW_COEFF -1.0f
 
 #define OFFSET 0.1f
 
