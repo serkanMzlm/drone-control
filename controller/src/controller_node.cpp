@@ -1,10 +1,21 @@
 #include "controller_node.hpp"
 
 using namespace std::placeholders;
-// this->get_clock()->now().nanoseconds() 
+using namespace px4_msgs::msg;
+
 Controller::Controller(): Node("controller_node"){
 	initTopic();
 }
+
+void Controller::iniAirMode(){
+	if(isArmChange()) { return; }
+	if(getArming() == ARM){
+		initSetpoint();
+	}
+	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
+	vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, getArming());
+}
+
 
 void Controller::initTopic(){
 	rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
@@ -14,12 +25,15 @@ void Controller::initTopic(){
 	pub.setpoint = this->create_publisher<trajectorySetpointMsg>("/fmu/in/trajectory_setpoint", 10);
 	pub.vehicle_command = this->create_publisher<vehicleCommandMsg>("/fmu/in/vehicle_command", 10);
 
-	sub.joy = this->create_subscription<joyMsg>("/joy", 10, 
+	sub.joy = this->create_subscription<joyMsg>("joy", 10, 
 				std::bind(&Controller::joyCallback, this, _1));		
 	sub.local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", qos,
 							std::bind(&Controller::localPosCallback, this, _1));
-	sub.odom = this->create_subscription<odomMsg>("/fmu/out/vehicle_odometry", qos, 
-							std::bind(&Controller::odomCallback, this, _1));
+	// sub.odom = this->create_subscription<odomMsg>("/fmu/out/vehicle_odometry", qos, 
+	// 						std::bind(&Controller::odomCallback, this, _1));
+
+	timer = this->create_wall_timer(std::chrono::milliseconds(F2P(50)), 
+							std::bind(&Controller::controllerCallback, this));
 }
 
 void Controller::joyCallback(joyMsg msg){
@@ -37,38 +51,54 @@ void Controller::joyCallback(joyMsg msg){
 void Controller::localPosCallback(localPosMsg::UniquePtr msg){
 	RCLCPP_DEBUG(this->get_logger(), "state: x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
 				msg->x, msg->y, msg->z, msg->heading);	
+	drone_state.position.x = msg->x;
+	drone_state.position.y = msg->y;
+	drone_state.position.z = msg->z;
+	drone_state.attitude.yaw = msg->heading;
 }
 
-void Controller::odomCallback(odomMsg::UniquePtr msg){
-	RCLCPP_DEBUG(this->get_logger(), "x: %.2f | y: %.2f | z: %.2f",
-				msg->position[0], msg->position[1], msg->position[2]);	
+
+void Controller::controllerCallback(){
+	iniAirMode();
+	if(!getArming()){ return; }
+	setpointUpdate();
+	controlMode(M_POSITION);
+	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+	trajectorySetpoint();
 }
 
-void Controller::setPosition(joyMsg new_data){
-	// if(!flags.is_arm) { return; }
-	// set_point.x = vec_state.x + new_data.axes[4] * coef;
-	// set_point.y = vec_state.y + new_data.axes[3] * coef;
-	// set_point.z = -vec_state.z + new_data.axes[1] * coef;
-	// set_point.yaw = vec_state.yaw + new_data.axes[0];
+//////////////////////// PX4 Communication ////////////////////////
+void Controller::controlMode(Mode_e mod){
+	offboardControlModeMsg msg{};
+	msg.position     = mod == M_POSITION ? true : false;
+	msg.velocity     = mod == M_VELOCITY ? true : false;
+	msg.acceleration = mod == M_ACCELERATION ? true : false;
+	msg.attitude     = mod == M_ATTITUDE ? true : false;
+	msg.body_rate    = mod == M_BODY_RATE ? true : false;
+	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+	pub.mode->publish(msg);
 }
 
-void Controller::resetData(Data_t select){
-	// switch (select){
-	// case STATE:
-	// 	setpoint.x  = 0;
-	// 	setpoint.y  = 0;
-	// 	setpoint.z  = 0;
-	// 	setpoint.yaw = 0;
-	// 	break;
-	// case ALL_DATA:
-	// 	setpoint.x  = 0;
-	// 	setpoint.y  = 0;
-	// 	setpoint.z  = 0;
-	// 	setpoint.yaw = 0;
-	// 	break;
-	// default:
-	// 	break;
-	// }
+void Controller::trajectorySetpoint(){
+ 	trajectorySetpointMsg msg{};
+	msg.position = {setpoint.position.x, setpoint.position.y, -setpoint.position.z};
+	msg.yaw = setpoint.attitude.yaw;
+	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+	pub.setpoint->publish(msg);
+}
+
+void Controller::vehicleCommand(uint16_t command, float param1, float param2){
+  	vehicleCommandMsg msg{};
+	msg.param1 = param1;
+	msg.param2 = param2;
+	msg.command = command;
+	msg.target_system = 1;
+	msg.target_component = 1;
+	msg.source_system = 1;
+	msg.source_component = 1;
+	msg.from_external = true;
+	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+	pub.vehicle_command->publish(msg);
 }
 
 int main(int argc, char ** args){

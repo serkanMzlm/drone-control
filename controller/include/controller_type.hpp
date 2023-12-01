@@ -4,18 +4,27 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
 
-#include <px4_msgs/msg/vehicle_command.hpp>
-#include <px4_msgs/msg/trajectory_setpoint.hpp>
-#include <px4_msgs/msg/vehicle_control_mode.hpp>
-#include <px4_msgs/msg/offboard_control_mode.hpp>
-#include <px4_msgs/msg/vehicle_odometry.hpp>
-#include <px4_msgs/msg/vehicle_local_position.hpp>
+#include "px4_msgs/msg/vehicle_command.hpp"
+#include "px4_msgs/msg/trajectory_setpoint.hpp"
+#include "px4_msgs/msg/vehicle_control_mode.hpp"
+#include "px4_msgs/msg/offboard_control_mode.hpp"
+#include "px4_msgs/msg/vehicle_odometry.hpp"
+#include "px4_msgs/msg/vehicle_local_position.hpp"
 
-#define COEF_X 1.0f
-#define COEF_Y 1.0f
-#define COEF_Z 1.0f
+#define POS_COEF_X 1.0f
+#define POS_COEF_Y 1.0f
+#define POS_COEF_Z 1.0f
+
+#define VEL_COEF_X 1.0f
+#define VEL_COEF_Y 1.0f
+#define VEL_COEF_Z 1.0f
+
+#define YAW_COEFF 0.25f
 
 #define OFFSET 0.1f
+
+#define ARM     1
+#define DISARM  0
 
 #define FAIL (0)
 #define OK   (1)
@@ -46,6 +55,18 @@ typedef enum{
 typedef enum{
     B_ARM, B_DISARM, B_TAKEOFF, B_LAND, B_ALL
 } Button_e;
+
+typedef enum{
+    M_POSITION, M_VELOCITY, M_ACCELERATION, M_ATTITUDE, M_BODY_RATE
+} Mode_e;
+
+typedef enum{
+    A_LAND, A_TAKEOFF, A_UNDEFINED
+} Air_mode_e;
+
+typedef enum { 
+  C_X, C_Y, C_Z, ALL_CC 
+} cc_mode_t;
 
 typedef struct{
   union{

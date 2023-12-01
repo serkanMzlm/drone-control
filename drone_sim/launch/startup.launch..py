@@ -40,6 +40,6 @@ def generate_launch_description():
     return LaunchDescription([
         px4_connect,
         joy,
-        bridge_camera
+        # bridge_camera
 	]
 )
