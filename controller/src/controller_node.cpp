@@ -82,6 +82,7 @@ void Controller::controlMode(Mode_e mod){
 void Controller::trajectorySetpoint(){
  	trajectorySetpointMsg msg{};
 	msg.position = {setpoint.position.x, setpoint.position.y, -setpoint.position.z};
+	// msg.velocity = {setpoint.velocity.x, setpoint.velocity.y, -setpoint.velocity.z};
 	msg.yaw = setpoint.attitude.yaw;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	pub.setpoint->publish(msg);
