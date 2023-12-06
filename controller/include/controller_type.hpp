@@ -23,6 +23,7 @@
 #define YAW_COEFF -0.5f
 
 #define OFFSET 0.1f
+#define SENS_DIST 0.25f
 
 #define ARM     1
 #define DISARM  0
