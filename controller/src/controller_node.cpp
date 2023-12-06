@@ -14,8 +14,7 @@ void Controller::iniAirMode(){
 	if(getArming() == ARM){
 		initSetpoint();
 	}
-	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
-	vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, getArming());
+	vehicleArming(getArming());
 }
 void Controller::controllerCallback(){
 	iniAirMode();
@@ -29,16 +28,14 @@ void Controller::controllerCallback(){
 void Controller::detectFallCallback(){
 	if(status.arming == ARM && flag.fall) { return; }
 	int diff = start_point - status.pos.z;
-    std::cout << "start point:" << start_point << " status: " << status.pos.z << std::endl;
-	if(abs(diff) > 0.2f){
+	if(diff < -FALL_OFFSET){
 		flag.fall = false;
 		std::cout << COLOR_RED   << "The drone is losing altitude..." << COLOR_RST << std::endl;
-		vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
-		vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1);
+		vehicleArming(ARM);
 		controlMode(POSITION);
 		fallTrajectorySetpoint(start_point);
 	}
-	if(status.vel.z < 0.0 ){
+	if(status.vel.z < 0.1f){
 		start_point = status.pos.z;
 		flag.fall = true;
 		std::cout << COLOR_GRN << "The vehicle's descent rate has been halted." << COLOR_RST << std::endl;

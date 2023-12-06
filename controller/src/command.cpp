@@ -31,7 +31,7 @@ void Command::setDesiredZ(float z_data, float state){
 }
 
 void Command::setDesiredYaw(float yaw_data, float state){
-    setpoint.att.yaw = state + (yaw_data * YAW_COEFF);
+    setpoint.att.yaw = state + (yaw_data * YAW_COEF);
 }
 
 void Command::initSetpoint(){

@@ -13,16 +13,17 @@ public:
     void initTopic();
 
     void joyCallback(joyMsg msg);
-    void localPosCallback(localPosMsg::UniquePtr msg);
-    void vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg);
     void iniAirMode();
     void controllerCallback();
     void detectFallCallback();
 
+    void vehicleArming(int state);
     void controlMode(Mode_e mod);
 	void trajectorySetpoint();
     void fallTrajectorySetpoint(float error);
 	void vehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0);
+    void localPosCallback(localPosMsg::UniquePtr msg);
+    void vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg);
 };
 
 #endif

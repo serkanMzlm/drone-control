@@ -6,6 +6,11 @@
 using namespace px4_msgs::msg;
 
 // The data sent to PX4
+void Controller::vehicleArming(int state){
+    vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
+	vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, state);
+}
+
 void Controller::controlMode(Mode_e mod){
 	offboardControlModeMsg msg{};
 	msg.position     = mod == POSITION ? true : false;
@@ -64,9 +69,9 @@ void Controller::localPosCallback(localPosMsg::UniquePtr msg){
     status.acc.z = msg->az;
 
 	status.att.yaw = msg->heading;
-	if(flag.fall){
+	if(flag.start_point){
 		start_point = msg->z;
-		flag.fall = false;
+		flag.start_point = false;
 	}
 }
 
