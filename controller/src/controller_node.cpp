@@ -84,7 +84,7 @@ void Controller::controlMode(Mode_e mod){
 	msg.acceleration = mod == M_ACCELERATION ? true : false;
 	msg.attitude     = mod == M_ATTITUDE ? true : false;
 	msg.body_rate    = mod == M_BODY_RATE ? true : false;
-	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+	msg.timestamp = rclcpp::Node::get_clock()->now().nanoseconds() / 1000;
 	pub.mode->publish(msg);
 }
 
@@ -94,7 +94,7 @@ void Controller::trajectorySetpoint(){
 	// msg.attitude = {setpoint.attitude.roll, setpoint.attitude.pitch, setpoint.attitude.thrust};
 	// msg.velocity = {setpoint.velocity.x, setpoint.velocity.y, -setpoint.velocity.z};
 	msg.yaw = setpoint.attitude.yaw;
-	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+	msg.timestamp = rclcpp::Node::get_clock()->now().nanoseconds() / 1000;
 	pub.setpoint->publish(msg);
 }
 
@@ -103,7 +103,7 @@ void Controller::fallTrajectorySetpoint(float error){
 	msg.position = {setpoint.position.x, setpoint.position.y, error};
 	// msg.velocity = {setpoint.velocity.x, setpoint.velocity.y, -setpoint.velocity.z};
 	msg.yaw = setpoint.attitude.yaw;
-	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+	msg.timestamp = rclcpp::Node::get_clock()->now().nanoseconds() / 1000;
 	pub.setpoint->publish(msg);
 }
 
