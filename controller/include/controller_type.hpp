@@ -10,6 +10,7 @@
 #include "px4_msgs/msg/offboard_control_mode.hpp"
 #include "px4_msgs/msg/vehicle_odometry.hpp"
 #include "px4_msgs/msg/vehicle_local_position.hpp"
+#include "px4_msgs/msg/vehicle_status.hpp"
 
 #define POS_COEF_X 1.0f
 #define POS_COEF_Y 1.0f
@@ -31,6 +32,7 @@
 
 using joyMsg = sensor_msgs::msg::Joy;
 using odomMsg = px4_msgs::msg::VehicleOdometry;
+using VehicleStatusMsg = px4_msgs::msg::VehicleStatus;
 using vehicleCommandMsg = px4_msgs::msg::VehicleCommand;
 using localPosMsg = px4_msgs::msg::VehicleLocalPosition;
 using trajectorySetpointMsg = px4_msgs::msg::TrajectorySetpoint;
@@ -46,6 +48,7 @@ typedef struct{
     rclcpp::Subscription<joyMsg>::SharedPtr joy;
     rclcpp::Subscription<localPosMsg>::SharedPtr local_pos;
     rclcpp::Subscription<odomMsg>::SharedPtr odom;
+    rclcpp::Subscription<VehicleStatusMsg>::SharedPtr vehcile_status;
 }Sub_t;
 
 typedef enum{
@@ -73,9 +76,10 @@ typedef struct{
     struct{
       float roll;
       float pitch;
+      float thrust;
       float yaw;
     };
-    float pos[3];
+    float pos[4];
   };
 }Attitude_t;
 

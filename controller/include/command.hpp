@@ -15,6 +15,10 @@ protected:
     Joy_t joy_data;
     State_t drone_state;
     State_t setpoint;
+    float start_point;
+    float fall_vel;
+    bool flag_first_point = true;
+    bool is_fall = true;
 
 public:
     // void updateState();

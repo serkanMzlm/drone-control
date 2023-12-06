@@ -21,10 +21,13 @@ void Command::setDesiredY(float y_data, float state){
 }
 
 void Command::setDesiredZ(float z_data, float state){
+    if(z_data > 0.1){
+        is_fall = true;        
+    }
     setpoint.position.z = state + z_data * POS_COEF_Z;
     setpoint.velocity.z = z_data * POS_COEF_Z;
-    std::cout << "setpoint Z: " << setpoint.position.z << " state: " 
-                                    << state << " joy: " << z_data << std::endl;
+    // std::cout << "setpoint Z: " << setpoint.position.z << " state: " 
+    //                                 << state << " joy: " << z_data << std::endl;
 }
 
 void Command::setDesiredYaw(float yaw_data, float state){
@@ -41,6 +44,7 @@ void Command::initSetpoint(){
 bool Command::isArmChange(){
     if(joy_data.button[B_DISARM]){
         arming = DISARM;
+        flag_first_point = true;
         return false;
     }else if(joy_data.button[B_ARM]){
         arming = ARM;
