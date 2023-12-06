@@ -13,11 +13,13 @@ void Command::setpointUpdate(){
 void Command::setDesiredX(float x_data, float state){
     setpoint.pos.x = state + x_data * POS_COEF_X;
     setpoint.vel.x = x_data * VEL_COEF_X;
+    setpoint.att.pitch = constrain(x_data, MIN_VALUE, MAX_VALUE);
 }
 
 void Command::setDesiredY(float y_data, float state){
     setpoint.pos.y = state + y_data * POS_COEF_Y;
     setpoint.vel.y = y_data * VEL_COEF_Y;
+    setpoint.att.roll = constrain(y_data, MIN_VALUE, MAX_VALUE);
 }
 
 void Command::setDesiredZ(float z_data, float state){
@@ -26,8 +28,7 @@ void Command::setDesiredZ(float z_data, float state){
     }
     setpoint.pos.z = state + z_data * POS_COEF_Z;
     setpoint.vel.z = z_data * POS_COEF_Z;
-    // std::cout << "setpoint Z: " << setpoint.position.z << " state: " 
-    //                                 << state << " joy: " << z_data << std::endl;
+    setpoint.att.thrust = constrain(z_data, MIN_VALUE, MAX_VALUE);
 }
 
 void Command::setDesiredYaw(float yaw_data, float state){

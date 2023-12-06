@@ -44,6 +44,9 @@
 #define FAIL (0)
 #define OK   (1)
 
+#define MIN_VALUE -1.0F
+#define MAX_VALUE 1.0F
+
 using joyMsg = sensor_msgs::msg::Joy;
 using odomMsg = px4_msgs::msg::VehicleOdometry;
 using VehicleStatusMsg = px4_msgs::msg::VehicleStatus;

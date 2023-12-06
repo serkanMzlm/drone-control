@@ -13,12 +13,12 @@ void Controller::vehicleArming(int state){
 
 void Controller::controlMode(Mode_e mod){
 	offboardControlModeMsg msg{};
-	msg.position     = mod == POSITION ? true : false;
-	msg.velocity     = mod == VELOCITY ? true : false;
+	msg.position     = mod == POSITION     ? true : false;
+	msg.velocity     = mod == VELOCITY     ? true : false;
 	msg.acceleration = mod == ACCELERATION ? true : false;
-	msg.attitude     = mod == ATTITUDE ? true : false;
-	msg.body_rate    = mod == BODY_RATE ? true : false;
-	msg.actuator     = mod == ACTUATOR ? true : false;
+	msg.attitude     = mod == ATTITUDE     ? true : false;
+	msg.body_rate    = mod == BODY_RATE    ? true : false;
+	msg.actuator     = mod == ACTUATOR     ? true : false;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	pub.mode->publish(msg);
 }
@@ -42,12 +42,16 @@ void Controller::fallTrajectorySetpoint(float error){
 }
 void Controller::attitudeSetpoint(){
     vehicleAttitudeSetpointMsg msg;
+    msg.roll_body = setpoint.att.roll;
+    msg.pitch_body = setpoint.att.pitch;
+    msg.yaw_body = setpoint.att.yaw;
+    msg.thrust_body = {0.0, 0.0, -setpoint.att.thrust};
     pub.attitude_setpoint->publish(msg);
 }
 
 void Controller::ratesSetpoint(){
     vehicleRatesSetpointMsg msg;
-
+    msg.roll = setpoint.att.roll;
     pub.rates_setpoint->publish(msg);
 }
 

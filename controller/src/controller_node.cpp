@@ -21,9 +21,10 @@ void Controller::controllerCallback(){
 	iniAirMode();
 	if(!getArming()){ return; }
 	setpointUpdate();
-	controlMode(POSITION);
+	controlMode(ATTITUDE);
 	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
-	trajectorySetpoint();
+	// trajectorySetpoint();
+	attitudeSetpoint();
 }
 
 void Controller::detectFallCallback(){
