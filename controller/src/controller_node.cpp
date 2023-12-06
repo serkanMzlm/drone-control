@@ -5,6 +5,7 @@ using namespace px4_msgs::msg;
 
 
 Controller::Controller(): Node("controller_node"){
+	flag.fall = true;
 	initTopic();
 }
 
@@ -16,42 +17,45 @@ void Controller::iniAirMode(){
 	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
 	vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, getArming());
 }
+void Controller::controllerCallback(){
+	iniAirMode();
+	if(!getArming()){ return; }
+	setpointUpdate();
+	controlMode(POSITION);
+	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+	trajectorySetpoint();
+}
 
 void Controller::detectFallCallback(){
-	if(vehicle_arm_status != 1 && is_fall) { return; }
-	int diff = start_point - drone_state.position.z;
-	if(abs(diff) > 0.5){
-		is_fall = false;
-		std::cout << COLOR_RED   << "The drone is losing altitude..." << std::endl;
+	if(status.arming == ARM && flag.fall) { return; }
+	int diff = start_point - status.pos.z;
+    std::cout << "start point:" << start_point << " status: " << status.pos.z << std::endl;
+	if(abs(diff) > 0.2f){
+		flag.fall = false;
+		std::cout << COLOR_RED   << "The drone is losing altitude..." << COLOR_RST << std::endl;
 		vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
 		vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1);
-		controlMode(M_POSITION);
+		controlMode(POSITION);
 		fallTrajectorySetpoint(start_point);
 	}
-	if(fall_vel < 0.0 ){
-		start_point = drone_state.position.z;
-		is_fall = true;
-		std::cout << COLOR_GRN << "The vehicle's descent rate has been halted." << std::endl;
-
+	if(status.vel.z < 0.0 ){
+		start_point = status.pos.z;
+		flag.fall = true;
+		std::cout << COLOR_GRN << "The vehicle's descent rate has been halted." << COLOR_RST << std::endl;
 	}
 }
 
-
-
 void Controller::joyCallback(joyMsg msg){
-	joy_data.button[B_ARM] = msg.buttons[0];
-	joy_data.button[B_DISARM] = msg.buttons[1];
-	joy_data.button[B_TAKEOFF] = msg.buttons[2];
-	joy_data.button[B_LAND] = msg.buttons[3];
+	joy_data.button[ARM] = msg.buttons[0];
+	joy_data.button[DISARM] = msg.buttons[1];
+	joy_data.button[TAKEOFF] = msg.buttons[2];
+	joy_data.button[LAND] = msg.buttons[3];
 
-	joy_data.axes[A_YAW]   = FILTER_OFFSET(msg.axes[0]);
-	joy_data.axes[A_THR]   = FILTER_OFFSET(msg.axes[1]);
-	joy_data.axes[A_ROLL]  = FILTER_OFFSET(msg.axes[3]);
-	joy_data.axes[A_PITCH] = FILTER_OFFSET(msg.axes[4]);
+	joy_data.axes[YAW]   = FILTER_OFFSET(msg.axes[0]);
+	joy_data.axes[THR]   = FILTER_OFFSET(msg.axes[1]);
+	joy_data.axes[ROLL]  = FILTER_OFFSET(msg.axes[3]);
+	joy_data.axes[PITCH] = FILTER_OFFSET(msg.axes[4]);
 }
-
-
-
 
 void Controller::initTopic(){
 	rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
@@ -67,8 +71,6 @@ void Controller::initTopic(){
 							std::bind(&Controller::localPosCallback, this, _1));
 	sub.vehcile_status = this->create_subscription<VehicleStatusMsg>("/fmu/out/vehicle_status", qos,
                             std::bind(&Controller::vehicleStatusCallback, this, _1));
-	// sub.odom = this->create_subscription<odomMsg>("/fmu/out/vehicle_odometry", qos, 
-	// 						std::bind(&Controller::odomCallback, this, _1));
 
 	timer = this->create_wall_timer(std::chrono::milliseconds(F2P(50)), 
 							std::bind(&Controller::controllerCallback, this));

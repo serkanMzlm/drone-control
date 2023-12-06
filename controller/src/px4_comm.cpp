@@ -1,35 +1,37 @@
+/*///////////////////////////////////////////// 
+                PX4 Communication
+*//////////////////////////////////////////////
 #include "controller_node.hpp"
 
 using namespace px4_msgs::msg;
 
-//////////////////////// PX4 Communication ////////////////////////
+// The data sent to PX4
 void Controller::controlMode(Mode_e mod){
 	offboardControlModeMsg msg{};
-	msg.position     = mod == M_POSITION ? true : false;
-	msg.velocity     = mod == M_VELOCITY ? true : false;
-	msg.acceleration = mod == M_ACCELERATION ? true : false;
-	msg.attitude     = mod == M_ATTITUDE ? true : false;
-	msg.body_rate    = mod == M_BODY_RATE ? true : false;
-	msg.timestamp = rclcpp::Node::get_clock()->now().nanoseconds() / 1000;
+	msg.position     = mod == POSITION ? true : false;
+	msg.velocity     = mod == VELOCITY ? true : false;
+	msg.acceleration = mod == ACCELERATION ? true : false;
+	msg.attitude     = mod == ATTITUDE ? true : false;
+	msg.body_rate    = mod == BODY_RATE ? true : false;
+	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	pub.mode->publish(msg);
 }
 
 void Controller::trajectorySetpoint(){
  	trajectorySetpointMsg msg{};
-	msg.position = {setpoint.position.x, setpoint.position.y, -setpoint.position.z};
+	msg.position = {setpoint.pos.x, setpoint.pos.y, -setpoint.pos.z};
 	// msg.attitude = {setpoint.attitude.roll, setpoint.attitude.pitch, setpoint.attitude.thrust};
 	// msg.velocity = {setpoint.velocity.x, setpoint.velocity.y, -setpoint.velocity.z};
-	msg.yaw = setpoint.attitude.yaw;
-	msg.timestamp = rclcpp::Node::get_clock()->now().nanoseconds() / 1000;
+	msg.yaw = setpoint.att.yaw;
+	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	pub.setpoint->publish(msg);
 }
 
 void Controller::fallTrajectorySetpoint(float error){
  	trajectorySetpointMsg msg{};
-	msg.position = {setpoint.position.x, setpoint.position.y, error};
-	// msg.velocity = {setpoint.velocity.x, setpoint.velocity.y, -setpoint.velocity.z};
-	msg.yaw = setpoint.attitude.yaw;
-	msg.timestamp = rclcpp::Node::get_clock()->now().nanoseconds() / 1000;
+	msg.position = {setpoint.pos.x, setpoint.pos.y, error};
+	msg.yaw = setpoint.att.yaw;
+	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	pub.setpoint->publish(msg);
 }
 
@@ -47,31 +49,27 @@ void Controller::vehicleCommand(uint16_t command, float param1, float param2){
 	pub.vehicle_command->publish(msg);
 }
 
-void Controller::controllerCallback(){
-	iniAirMode();
-	if(!getArming()){ return; }
-	setpointUpdate();
-	controlMode(M_POSITION);
-	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
-	trajectorySetpoint();
-}
-
-
+// The data received from PX4
 void Controller::localPosCallback(localPosMsg::UniquePtr msg){
-	RCLCPP_DEBUG(this->get_logger(), "state: x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
-				msg->x, msg->y, msg->z, msg->heading);	
-	drone_state.position.x = msg->x;
-	drone_state.position.y = msg->y;
-	drone_state.position.z = msg->z;
-	drone_state.attitude.yaw = msg->heading;
-    fall_vel = msg->vz;
-	if(flag_first_point){
+	status.pos.x = msg->x;
+	status.pos.y = msg->y;
+	status.pos.z = msg->z;
+
+    status.vel.x = msg->vx;
+    status.vel.y = msg->vy;
+    status.vel.z = msg->vz;
+
+    status.acc.x = msg->ax;
+    status.acc.y = msg->ay;
+    status.acc.z = msg->az;
+
+	status.att.yaw = msg->heading;
+	if(flag.fall){
 		start_point = msg->z;
-		flag_first_point = false;
+		flag.fall = false;
 	}
 }
 
 void Controller::vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg){
-        // RCLCPP_INFO(this->get_logger(), "Arm Status: %d", msg->arming_state);
-		vehicle_arm_status = msg->arming_state;
+    status.arming = msg->arming_state == 2 ? ARM : DISARM;
 }

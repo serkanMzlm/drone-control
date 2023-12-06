@@ -7,18 +7,18 @@
 class Command{
 private:
     int arming = DISARM; 
-    int air_mode = A_UNDEFINED;
+    int air_mode = UNDEFINED;
 
 protected:
     Pub_t pub;
     Sub_t sub;
+
     Joy_t joy_data;
-    State_t drone_state;
+    State_t status;
     State_t setpoint;
+
+    Flag_t flag;
     float start_point;
-    float fall_vel;
-    bool flag_first_point = true;
-    bool is_fall = true;
 
 public:
     // void updateState();

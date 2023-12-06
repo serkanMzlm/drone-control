@@ -15,6 +15,7 @@
 #define COLOR_RED "\x1b[31m"
 #define COLOR_YLW "\x1b[33m"
 #define COLOR_GRN "\x1b[32m" 
+#define COLOR_RST "\x1b[0m"
 
 #define POS_COEF_X 1.0f
 #define POS_COEF_Y 1.0f
@@ -27,9 +28,6 @@
 #define YAW_COEFF -0.5f
 
 #define OFFSET 0.1f
-
-#define ARM     1
-#define DISARM  0
 
 #define FAIL (0)
 #define OK   (1)
@@ -56,20 +54,16 @@ typedef struct{
 }Sub_t;
 
 typedef enum{
-    A_THR, A_YAW, A_PITCH, A_ROLL, AXES_ALL
+    THR, YAW, PITCH, ROLL, AXES_ALL
 } Axes_e;
 
 typedef enum{
-    B_ARM, B_DISARM, B_TAKEOFF, B_LAND, B_ALL
-} Button_e;
+    DISARM, ARM, TAKEOFF, LAND, UNDEFINED, V_ALL
+} Vehicle_mod;
 
 typedef enum{
-    M_POSITION, M_VELOCITY, M_ACCELERATION, M_ATTITUDE, M_BODY_RATE
+    POSITION, VELOCITY, ACCELERATION, ATTITUDE, BODY_RATE, M_ALL
 } Mode_e;
-
-typedef enum{
-    A_LAND, A_TAKEOFF, A_UNDEFINED
-} Air_mode_e;
 
 typedef enum { 
   C_X, C_Y, C_Z, ALL_CC 
@@ -99,23 +93,27 @@ typedef struct  {
 }Cartesian_s ;
 
 typedef struct{
-    Cartesian_s  position;
-    Cartesian_s  velocity;
-    Attitude_t attitude;
-} State_t; 
+    Cartesian_s  pos;
+    Cartesian_s  vel;
+    Cartesian_s  acc;
+    Attitude_t att;
+    int arming; // arm disarm
+}State_t; 
 
 typedef struct{
-    bool is_arm;
-    bool is_joy;
-    bool is_press;
-    bool is_takeoff;
-    bool is_land;
-} Flag_t;
+    bool arm; 
+    bool joy;
+    bool press;
+    bool takeoff;
+    bool land;
+    bool start_point;
+    bool fall;
+}Flag_t;
 
 typedef struct{
    float axes[AXES_ALL];
-   int button[B_ALL];
-} Joy_t;
+   int button[V_ALL];
+}Joy_t;
 
 typedef enum {STATE, ALL_DATA} Data_t;
 

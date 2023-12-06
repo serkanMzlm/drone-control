@@ -8,7 +8,6 @@ class Controller : public rclcpp::Node, public Command{
 private:
     rclcpp::TimerBase::SharedPtr timer;
     rclcpp::TimerBase::SharedPtr fall_timer;
-    int vehicle_arm_status = 1;
 public:
     explicit Controller();
     void initTopic();
