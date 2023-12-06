@@ -7,23 +7,37 @@ Controller::Controller(): Node("controller_node"){
 	initTopic();
 }
 
+void Controller::iniAirMode(){
+	if(isArmChange()) { return; }
+	if(getArming() == ARM){
+		initSetpoint();
+	}
+	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
+	vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, getArming());
+}
+
 void Controller::detectFallCallback(){
 	if(vehicle_arm_status != 1 && is_fall) { return; }
 	int diff = start_point - drone_state.position.z;
-	if(abs(diff) > SENS_DIST){
-		is_fall = true;
-		std::cout <<  "The drone is losing altitude..." << std::endl;
+	if(abs(diff) > 0.5){
+		is_fall = false;
+		std::cout << COLOR_RED   << "The drone is losing altitude..." << std::endl;
 		vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
-    	vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, getArming());
+		vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1);
 		controlMode(M_POSITION);
 		fallTrajectorySetpoint(start_point);
 	}
 	if(fall_vel < 0.0 ){
 		start_point = drone_state.position.z;
 		is_fall = true;
-		std::cout << "The vehicle's descent rate has been halted." << std::endl;
+		std::cout << COLOR_GRN << "The vehicle's descent rate has been halted." << std::endl;
 
 	}
+}
+
+void Controller::vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg){
+        // RCLCPP_INFO(this->get_logger(), "Arm Status: %d", msg->arming_state);
+		vehicle_arm_status = msg->arming_state;
 }
 
 void Controller::joyCallback(joyMsg msg){
@@ -38,11 +52,17 @@ void Controller::joyCallback(joyMsg msg){
 	joy_data.axes[A_PITCH] = FILTER_OFFSET(msg.axes[4]);
 }
 
-
-void Controller::iniAirMode(){
-	if(isArmChange()) { return; }
-	if(getArming() == ARM){
-		initSetpoint();
+void Controller::localPosCallback(localPosMsg::UniquePtr msg){
+	RCLCPP_DEBUG(this->get_logger(), "state: x: %.2f | y: %.2f | z: %.2f | yaw: %.2f",
+				msg->x, msg->y, msg->z, msg->heading);	
+	drone_state.position.x = msg->x;
+	drone_state.position.y = msg->y;
+	drone_state.position.z = msg->z;
+	drone_state.attitude.yaw = msg->heading;
+    fall_vel = msg->vz;
+	if(flag_first_point){
+		start_point = msg->z;
+		flag_first_point = false;
 	}
 }
 
@@ -115,6 +135,8 @@ void Controller::initTopic(){
 							std::bind(&Controller::localPosCallback, this, _1));
 	sub.vehcile_status = this->create_subscription<VehicleStatusMsg>("/fmu/out/vehicle_status", qos,
                             std::bind(&Controller::vehicleStatusCallback, this, _1));
+	// sub.odom = this->create_subscription<odomMsg>("/fmu/out/vehicle_odometry", qos, 
+	// 						std::bind(&Controller::odomCallback, this, _1));
 
 	timer = this->create_wall_timer(std::chrono::milliseconds(F2P(50)), 
 							std::bind(&Controller::controllerCallback, this));
