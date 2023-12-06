@@ -1,9 +1,5 @@
 #include "controller_node.hpp"
 
-#define COLOR_RED "\x1b[31m"
-#define COLOR_YLW "\x1b[33m"
-#define COLOR_GRN "\x1b[32m" 
-
 using namespace std::placeholders;
 using namespace px4_msgs::msg;
 

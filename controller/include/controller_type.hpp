@@ -12,6 +12,10 @@
 #include "px4_msgs/msg/vehicle_local_position.hpp"
 #include "px4_msgs/msg/vehicle_status.hpp"
 
+#define COLOR_RED "\x1b[31m"
+#define COLOR_YLW "\x1b[33m"
+#define COLOR_GRN "\x1b[32m" 
+
 #define POS_COEF_X 1.0f
 #define POS_COEF_Y 1.0f
 #define POS_COEF_Z 1.0f
