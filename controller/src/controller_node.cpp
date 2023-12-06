@@ -75,7 +75,7 @@ void Controller::controllerCallback(){
 	iniAirMode();
 	if(!getArming()){ return; }
 	setpointUpdate();
-	controlMode(M_ATTITUDE);
+	controlMode(M_POSITION);
 	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
 	trajectorySetpoint();
 }
@@ -95,7 +95,7 @@ void Controller::controlMode(Mode_e mod){
 void Controller::trajectorySetpoint(){
  	trajectorySetpointMsg msg{};
 	msg.position = {setpoint.position.x, setpoint.position.y, -setpoint.position.z};
-	msg.attitude = {setpoint.attitude.roll, setpoint.attitude.pitch, setpoint.attitude.thrust};
+	// msg.attitude = {setpoint.attitude.roll, setpoint.attitude.pitch, setpoint.attitude.thrust};
 	// msg.velocity = {setpoint.velocity.x, setpoint.velocity.y, -setpoint.velocity.z};
 	msg.yaw = setpoint.attitude.yaw;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
