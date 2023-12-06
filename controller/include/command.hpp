@@ -6,7 +6,7 @@
 
 class Command{
 private:
-    int arming = DISARM; 
+    int arming = V_DISARM; 
     int air_mode = A_UNDEFINED;
 
 protected:

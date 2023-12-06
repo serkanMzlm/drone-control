@@ -16,6 +16,8 @@
 #define COLOR_YLW "\x1b[33m"
 #define COLOR_GRN "\x1b[32m" 
 
+#define SENS_DIST 0.3f
+
 #define POS_COEF_X 1.0f
 #define POS_COEF_Y 1.0f
 #define POS_COEF_Z 1.0f
@@ -27,9 +29,6 @@
 #define YAW_COEFF -0.5f
 
 #define OFFSET 0.1f
-
-#define ARM     1
-#define DISARM  0
 
 #define FAIL (0)
 #define OK   (1)
@@ -74,6 +73,10 @@ typedef enum{
 typedef enum { 
   C_X, C_Y, C_Z, ALL_CC 
 } cc_mode_t;
+
+typedef enum{
+  V_DISARM, V_ARM
+} Vec_status_e;
 
 typedef struct{
   union{

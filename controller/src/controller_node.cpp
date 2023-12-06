@@ -7,23 +7,13 @@ Controller::Controller(): Node("controller_node"){
 	initTopic();
 }
 
-void Controller::iniAirMode(){
-	if(isArmChange()) { return; }
-	if(getArming() == ARM){
-		initSetpoint();
-	}
-	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
-	vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, getArming());
-}
-
 void Controller::detectFallCallback(){
 	if(vehicle_arm_status != 1 && is_fall) { return; }
 	int diff = start_point - drone_state.position.z;
-	if(abs(diff) > 0.5){
-		is_fall = false;
+	if(abs(diff) > SENS_DIST){
+		is_fall = true;
 		std::cout << COLOR_RED   << "The drone is losing altitude..." << std::endl;
-		vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
-		vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1);
+		vehicleArm(V_ARM);
 		controlMode(M_POSITION);
 		fallTrajectorySetpoint(start_point);
 	}
@@ -35,6 +25,17 @@ void Controller::detectFallCallback(){
 	}
 }
 
+void Controller::controllerCallback(){
+	iniAirMode();
+	if(!getArming() || is_fall){ 
+		detectFallCallback();
+		return; 
+	}
+	setpointUpdate();
+	controlMode(M_ATTITUDE);
+	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+	trajectorySetpoint();
+}
 void Controller::joyCallback(joyMsg msg){
 	joy_data.button[B_ARM] = msg.buttons[0];
 	joy_data.button[B_DISARM] = msg.buttons[1];
@@ -47,13 +48,13 @@ void Controller::joyCallback(joyMsg msg){
 	joy_data.axes[A_PITCH] = FILTER_OFFSET(msg.axes[4]);
 }
 
-void Controller::controllerCallback(){
-	iniAirMode();
-	if(!getArming()){ return; }
-	setpointUpdate();
-	controlMode(M_ATTITUDE);
-	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
-	trajectorySetpoint();
+
+void Controller::iniAirMode(){
+	if(isArmChange()) { return; }
+	if(getArming() == V_ARM){
+		initSetpoint();
+	}
+	vehicleArm(getArming());
 }
 
 void Controller::initTopic(){

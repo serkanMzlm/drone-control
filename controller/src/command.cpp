@@ -43,11 +43,11 @@ void Command::initSetpoint(){
 
 bool Command::isArmChange(){
     if(joy_data.button[B_DISARM]){
-        arming = DISARM;
+        arming = V_DISARM;
         flag_first_point = true;
         return false;
     }else if(joy_data.button[B_ARM]){
-        arming = ARM;
+        arming = V_ARM;
         return false;
     }
     return true;

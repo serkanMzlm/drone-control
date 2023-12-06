@@ -1,5 +1,8 @@
 #include "controller_node.hpp"
 
+using namespace std::placeholders;
+using namespace px4_msgs::msg;
+
 void Controller::vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg){
         // RCLCPP_INFO(this->get_logger(), "Arm Status: %d", msg->arming_state);
 		vehicle_arm_status = msg->arming_state;
@@ -18,6 +21,12 @@ void Controller::localPosCallback(localPosMsg::UniquePtr msg){
 		flag_first_point = false;
 	}
 }
+
+ void Controller::vehicleArm(int status){
+    if(status != V_ARM && status != V_DISARM) { return; }
+    vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); 
+    vehicleCommand(px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, status);
+ }
 
 void Controller::controlMode(Mode_e mod){
 	offboardControlModeMsg msg{};
