@@ -18,6 +18,7 @@ void Controller::controlMode(Mode_e mod){
 	msg.acceleration = mod == ACCELERATION ? true : false;
 	msg.attitude     = mod == ATTITUDE ? true : false;
 	msg.body_rate    = mod == BODY_RATE ? true : false;
+	msg.actuator     = mod == ACTUATOR ? true : false;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	pub.mode->publish(msg);
 }
@@ -29,7 +30,7 @@ void Controller::trajectorySetpoint(){
 	// msg.velocity = {setpoint.velocity.x, setpoint.velocity.y, -setpoint.velocity.z};
 	msg.yaw = setpoint.att.yaw;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-	pub.setpoint->publish(msg);
+	pub.trajectory_setpoint->publish(msg);
 }
 
 void Controller::fallTrajectorySetpoint(float error){
@@ -37,7 +38,17 @@ void Controller::fallTrajectorySetpoint(float error){
 	msg.position = {setpoint.pos.x, setpoint.pos.y, error};
 	msg.yaw = setpoint.att.yaw;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-	pub.setpoint->publish(msg);
+	pub.trajectory_setpoint->publish(msg);
+}
+void Controller::attitudeSetpoint(){
+    vehicleAttitudeSetpointMsg msg;
+    pub.attitude_setpoint->publish(msg);
+}
+
+void Controller::ratesSetpoint(){
+    vehicleRatesSetpointMsg msg;
+
+    pub.rates_setpoint->publish(msg);
 }
 
 void Controller::vehicleCommand(uint16_t command, float param1, float param2){

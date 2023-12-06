@@ -16,6 +16,7 @@ void Controller::iniAirMode(){
 	}
 	vehicleArming(getArming());
 }
+
 void Controller::controllerCallback(){
 	iniAirMode();
 	if(!getArming()){ return; }
@@ -38,7 +39,7 @@ void Controller::detectFallCallback(){
 	if(status.vel.z < 0.1f){
 		start_point = status.pos.z;
 		flag.fall = true;
-		std::cout << COLOR_GRN << "The vehicle's descent rate has been halted." << COLOR_RST << std::endl;
+		// std::cout << COLOR_GRN << "The vehicle's descent rate has been halted." << COLOR_RST << std::endl;
 	}
 }
 
@@ -59,8 +60,10 @@ void Controller::initTopic(){
 	auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
 
 	pub.mode = this->create_publisher<offboardControlModeMsg>("/fmu/in/offboard_control_mode", 10);
-	pub.setpoint = this->create_publisher<trajectorySetpointMsg>("/fmu/in/trajectory_setpoint", 10);
 	pub.vehicle_command = this->create_publisher<vehicleCommandMsg>("/fmu/in/vehicle_command", 10);
+	pub.trajectory_setpoint = this->create_publisher<trajectorySetpointMsg>("/fmu/in/trajectory_setpoint", 10);
+	pub.attitude_setpoint = this->create_publisher<vehicleAttitudeSetpointMsg>("/fmu/in/vehicle_attitude_setpoint", 10);
+	pub.rates_setpoint = this->create_publisher<vehicleRatesSetpointMsg>("/fmu/in/vehicle_rates_setpoint", 10);
 
 	sub.joy = this->create_subscription<joyMsg>("joy", 10, 
 				std::bind(&Controller::joyCallback, this, _1));		

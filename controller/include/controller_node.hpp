@@ -21,6 +21,8 @@ public:
     void controlMode(Mode_e mod);
 	void trajectorySetpoint();
     void fallTrajectorySetpoint(float error);
+	void attitudeSetpoint();
+	void ratesSetpoint();
 	void vehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void localPosCallback(localPosMsg::UniquePtr msg);
     void vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg);

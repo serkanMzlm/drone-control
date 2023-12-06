@@ -5,12 +5,23 @@
 #include "sensor_msgs/msg/joy.hpp"
 
 #include "px4_msgs/msg/vehicle_command.hpp"
-#include "px4_msgs/msg/trajectory_setpoint.hpp"
-#include "px4_msgs/msg/vehicle_control_mode.hpp"
 #include "px4_msgs/msg/offboard_control_mode.hpp"
-#include "px4_msgs/msg/vehicle_odometry.hpp"
-#include "px4_msgs/msg/vehicle_local_position.hpp"
+
+// Copter Msg
+#include "px4_msgs/msg/trajectory_setpoint.hpp"
+#include "px4_msgs/msg/vehicle_attitude_setpoint.hpp"
+#include "px4_msgs/msg/vehicle_rates_setpoint.hpp"
+
+// Generic Vehicle Msg
+#include "px4_msgs/msg/vehicle_thrust_setpoint.hpp"
+#include "px4_msgs/msg/vehicle_torque_setpoint.hpp"
+#include "px4_msgs/msg/actuator_motors.hpp"
+#include "px4_msgs/msg/actuator_servos.hpp"
+
 #include "px4_msgs/msg/vehicle_status.hpp"
+#include "px4_msgs/msg/vehicle_odometry.hpp"
+#include "px4_msgs/msg/vehicle_control_mode.hpp"
+#include "px4_msgs/msg/vehicle_local_position.hpp"
 
 #define COLOR_RED "\x1b[31m"
 #define COLOR_YLW "\x1b[33m"
@@ -36,15 +47,21 @@
 using joyMsg = sensor_msgs::msg::Joy;
 using odomMsg = px4_msgs::msg::VehicleOdometry;
 using VehicleStatusMsg = px4_msgs::msg::VehicleStatus;
-using vehicleCommandMsg = px4_msgs::msg::VehicleCommand;
 using localPosMsg = px4_msgs::msg::VehicleLocalPosition;
-using trajectorySetpointMsg = px4_msgs::msg::TrajectorySetpoint;
+
+using vehicleCommandMsg = px4_msgs::msg::VehicleCommand;
 using offboardControlModeMsg = px4_msgs::msg::OffboardControlMode;
+
+using trajectorySetpointMsg = px4_msgs::msg::TrajectorySetpoint;
+using vehicleAttitudeSetpointMsg = px4_msgs::msg::VehicleAttitudeSetpoint;
+using vehicleRatesSetpointMsg = px4_msgs::msg::VehicleRatesSetpoint;
 
 typedef struct{
     rclcpp::Publisher<offboardControlModeMsg>::SharedPtr mode;
-    rclcpp::Publisher<trajectorySetpointMsg>::SharedPtr setpoint;
     rclcpp::Publisher<vehicleCommandMsg>::SharedPtr vehicle_command;
+    rclcpp::Publisher<trajectorySetpointMsg>::SharedPtr trajectory_setpoint;
+    rclcpp::Publisher<vehicleAttitudeSetpointMsg>::SharedPtr attitude_setpoint;
+    rclcpp::Publisher<vehicleRatesSetpointMsg>::SharedPtr rates_setpoint;
 }Pub_t;
 
 typedef struct{
@@ -63,7 +80,7 @@ typedef enum{
 } Vehicle_mod;
 
 typedef enum{
-    POSITION, VELOCITY, ACCELERATION, ATTITUDE, BODY_RATE, M_ALL
+    POSITION, VELOCITY, ACCELERATION, ATTITUDE, BODY_RATE, ACTUATOR, M_ALL
 } Mode_e;
 
 typedef enum { 
