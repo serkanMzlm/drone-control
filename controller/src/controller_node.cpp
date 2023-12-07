@@ -31,7 +31,7 @@ void Controller::controllerCallback(){
 void Controller::detectFallCallback(){
 	if(status.arming == ARM && flag.fall) { return; }
 	int diff = start_point - status.pos.z;
-	if(diff < -FALL_OFFSET){
+	if(diff < -FALL_OFFSET && count++ < 2){
 		flag.fall = false;
 		std::cout << COLOR_RED   << "The drone is losing altitude..." << COLOR_RST << std::endl;
 		vehicleArming(ARM);

@@ -19,6 +19,7 @@ protected:
 
     Flag_t flag;
     float start_point;
+    int count = 0;
 
 public:
     // void updateState();

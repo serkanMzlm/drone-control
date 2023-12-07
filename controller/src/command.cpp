@@ -46,6 +46,7 @@ bool Command::isArmChange(){
     if(joy_data.button[DISARM]){
         arming = DISARM;
         flag.start_point = true;
+        count = 0;
         return false;
     }else if(joy_data.button[ARM]){
         arming = ARM;
