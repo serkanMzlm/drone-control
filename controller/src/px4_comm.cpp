@@ -52,6 +52,9 @@ void Controller::attitudeSetpoint(){
 void Controller::ratesSetpoint(){
     vehicleRatesSetpointMsg msg;
     msg.roll = setpoint.att.roll;
+    msg.pitch = setpoint.att.pitch;
+    msg.yaw = setpoint.att.yaw;
+    msg.thrust_body = {0, 0, -setpoint.att.thrust};
     pub.rates_setpoint->publish(msg);
 }
 
