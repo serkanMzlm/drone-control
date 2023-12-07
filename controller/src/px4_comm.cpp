@@ -45,7 +45,7 @@ void Controller::attitudeSetpoint(){
     msg.roll_body = setpoint.att.roll;
     msg.pitch_body = setpoint.att.pitch;
     msg.yaw_body = setpoint.att.yaw;
-    msg.thrust_body = {0.0, 0.0, -setpoint.att.thrust};
+    msg.thrust_body = {0.0, 0.0, -0.7};
     pub.attitude_setpoint->publish(msg);
 }
 

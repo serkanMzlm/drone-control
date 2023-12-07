@@ -21,11 +21,11 @@ void Controller::controllerCallback(){
 	iniAirMode();
 	if(!getArming()){ return; }
 	setpointUpdate();
-	controlMode(BODY_RATE);
+	controlMode(POSITION);
 	vehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
-	// trajectorySetpoint();
+	trajectorySetpoint();
 	// attitudeSetpoint();
-	ratesSetpoint();
+	// ratesSetpoint();
 }
 
 void Controller::detectFallCallback(){
@@ -35,8 +35,9 @@ void Controller::detectFallCallback(){
 		flag.fall = false;
 		std::cout << COLOR_RED   << "The drone is losing altitude..." << COLOR_RST << std::endl;
 		vehicleArming(ARM);
-		controlMode(POSITION);
-		fallTrajectorySetpoint(start_point);
+		controlMode(ATTITUDE);
+		attitudeSetpoint();
+		// fallTrajectorySetpoint(start_point);
 	}
 	if(status.vel.z < 0.1f){
 		start_point = status.pos.z;
