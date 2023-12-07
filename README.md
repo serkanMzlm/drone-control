@@ -1,55 +1,43 @@
-## Drone Control
-PX4 dronunu offboard modunda kullanımı. 
+## Usage of PX4 in Offboard Mode
+The purpose of this project is to use the PX4 Autopilot software in Offboard mode with ROS2.
+It allows the control of a PX4 drone in a simulation environment using data from a joystick.
 
-Yazılımın daha iyi takip edilip geliştirmek için `gdbserver` üzerinden 
-VSCode içinde debug yaparak ilerlenebilir. Bu sayede hataların hangi satırlarda yapıldığı veya kodun nerelere gitdiği incelenebilir.
+### Installation
 
-### Kurulum
+1. [PX4 Autoplot](https://docs.px4.io/main/en/dev_setup/building_px4.html)
 
-1. PX4 Autoplot:
+2. **drone-control** packages installation:
 ```
-git clone https://github.com/PX4/PX4-Autopilot.git --recursive
-bash ./PX4-Autopilot/Tools/setup/ubuntu.sh
-```
-2. Paket Kurulumu
-```
-git clone git@github.com:serkanMzlm/Drone_Control.git
-cd Drone_Control
+git clone git@github.com:serkanMzlm/drone-control.git
+cd drone-control
 git submodule init
 git submodule update
 ```
 
 ### Build
-- İlk olarak 'px4_msgs' paketi build edilip sisteme dahil edilmelidir.
+- Firstly, the 'px4_msgs' package needs to be built and included in the system. This is necessary because other packages need the messages provided by 'px4_msgs' during their build process
 ```
 colcon build --packages-select px4_msgs
 . install/setup.bash
 ```
+- After building and including the 'px4_msgs' package in the system, all files can be built.
 ```
-colcon build --packages-select command
+colcon build 
 . install/setup.bash
 ```
-
+**Caution:** Messages within the 'px4_msgs' package in PX4 Autopilot software may change in future versions. Therefore, errors may occur during ROS2 execution. To address these errors, copy the 'px4_msgs' files from PX4 Autopilot to the 'px4_msgs' folder.
+`PX4-Autopilot/msg -> drone-control/px4_msgs`
 ### Run
 - Terminal 1:
 ```
-make px4_sitl gz_x500  # PX4-Autoplot Dizininde
+make px4_sitl gz_x500 
 ```
 
 - Terminal 2:
 ```
-MicroXRCEAgent udp4 -p 8888
+ros2 launch drone_sim startup.launch.py
 ```
 - Terminal 3:
 ```
-ros2 run joy joy_node
+ros2 run controller  controller_node
 ```
-- Terminal 4:
-```
-ros2 run command command_node
-```
-
-
-### Oluşabilecek Sorunlar
-1.  "PX4-Autopilot" yazılımının eski versiyonu kullanılıyorsa `ros2 topic echo /fmu/out/vehicle_local_position
-` komutunun çalışmaması. Yazılımı güncelleyin
