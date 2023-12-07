@@ -28,8 +28,8 @@
 #define COLOR_GRN "\x1b[32m" 
 #define COLOR_RST "\x1b[0m"
 
-#define POS_COEF_X 1.0f
-#define POS_COEF_Y 1.0f
+#define POS_COEF_X 0.5f
+#define POS_COEF_Y 0.5f
 #define POS_COEF_Z 1.0f
 
 #define VEL_COEF_X 1.0f
