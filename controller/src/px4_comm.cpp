@@ -87,6 +87,8 @@ void Controller::localPosCallback(localPosMsg::UniquePtr msg){
     status.acc.z = msg->az;
 
 	status.att.yaw = msg->heading;
+	float height = status.pos.z;
+	std::cout << "Height: " << -height << std::endl;
 	if(flag.start_point){
 		start_point = msg->z;
 		flag.start_point = false;
