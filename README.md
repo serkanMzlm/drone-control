@@ -41,3 +41,6 @@ ros2 launch drone_sim startup.launch.py
 ```
 ros2 run controller  controller_node
 ```
+
+- Desired packages can be toggled on and off in the launch file
+
