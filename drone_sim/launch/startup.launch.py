@@ -28,7 +28,15 @@ px4_connect = ExecuteProcess(
     cmd=["MicroXRCEAgent", "udp4", "-p",  "8888"]
 )
 
-bridge_camera = Node(
+out_camera = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            "/camera_out@sensor_msgs/msg/Image[gz.msgs.Image"
+        ]
+)
+
+bottom_camera = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=[
@@ -40,6 +48,7 @@ def generate_launch_description():
     return LaunchDescription([
         px4_connect,
         joy,
-        # bridge_camera
+        out_camera,
+        bottom_camera
 	]
 )
