@@ -25,7 +25,7 @@ void Controller::controlMode(Mode_e mod){
 
 void Controller::trajectorySetpoint(){
  	trajectorySetpointMsg msg{};
-	msg.position = {setpoint.pos.x, setpoint.pos.y, -setpoint.pos.z};
+	msg.position = {setpoint.pos.x, -setpoint.pos.y, -setpoint.pos.z};
 	// msg.attitude = {setpoint.attitude.roll, setpoint.attitude.pitch, setpoint.attitude.thrust};
 	// msg.velocity = {setpoint.velocity.x, setpoint.velocity.y, -setpoint.velocity.z};
 	msg.yaw = setpoint.att.yaw;
@@ -45,7 +45,7 @@ void Controller::attitudeSetpoint(){
     msg.roll_body = setpoint.att.roll;
     msg.pitch_body = setpoint.att.pitch;
     msg.yaw_body = setpoint.att.yaw;
-    msg.thrust_body = {0.0, 0.0, -0.85};
+    msg.thrust_body = {0.0, 0.0, -setpoint.att.thrust};
     pub.attitude_setpoint->publish(msg);
 }
 
@@ -54,7 +54,7 @@ void Controller::ratesSetpoint(){
     msg.roll = setpoint.att.roll;
     msg.pitch = setpoint.att.pitch;
     msg.yaw = setpoint.att.yaw;
-    msg.thrust_body = {0, 0, -setpoint.att.thrust};
+    msg.thrust_body = {setpoint.att.roll, setpoint.att.pitch, -setpoint.att.thrust};
     pub.rates_setpoint->publish(msg);
 }
 
@@ -87,8 +87,6 @@ void Controller::localPosCallback(localPosMsg::UniquePtr msg){
     status.acc.z = msg->az;
 
 	status.att.yaw = msg->heading;
-	float height = status.pos.z;
-	std::cout << "Height: " << -height << std::endl;
 	if(flag.start_point){
 		start_point = msg->z;
 		flag.start_point = false;
@@ -97,4 +95,6 @@ void Controller::localPosCallback(localPosMsg::UniquePtr msg){
 
 void Controller::vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg){
     status.arming = msg->arming_state == 2 ? ARM : DISARM;
+	std::cout << "Height: " << -status.pos.z << std::endl;
+
 }

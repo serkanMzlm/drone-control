@@ -31,19 +31,19 @@ void Controller::controllerCallback(){
 void Controller::detectFallCallback(){
 	if(status.arming == ARM && flag.fall) { return; }
 	int diff = start_point - status.pos.z;
-	if(status.pos.z > -5.5f && count < 2 && diff < -FALL_OFFSET){
+	if(/*status.pos.z > -15.5f  && count < 2  &&*/ diff < -FALL_OFFSET){
 		flag.fall = false;
 		std::cout << COLOR_RED   << "The drone is losing altitude..." << COLOR_RST << std::endl;
 		vehicleArming(ARM);
-		controlMode(ATTITUDE);
-		attitudeSetpoint();
+		controlMode(POSITION);
+		// attitudeSetpoint();
 		count++;
-		// fallTrajectorySetpoint(start_point);
+		fallTrajectorySetpoint(-100);
 	}
-	if(status.vel.z < 0.1f){
+	if(status.vel.z < 0.5f){
 		start_point = status.pos.z;
 		flag.fall = true;
-		// std::cout << COLOR_GRN << "The vehicle's descent rate has been halted." << COLOR_RST << std::endl;
+		std::cout << COLOR_GRN << "The vehicle's descent rate has been halted." << COLOR_RST << std::endl;
 	}
 }
 

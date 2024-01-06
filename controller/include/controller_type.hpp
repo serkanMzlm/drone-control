@@ -39,7 +39,7 @@
 #define YAW_COEF -0.5f
 
 #define OFFSET 0.1f
-#define FALL_OFFSET 0.1f
+#define FALL_OFFSET 0.05f
 
 #define FAIL (0)
 #define OK   (1)
