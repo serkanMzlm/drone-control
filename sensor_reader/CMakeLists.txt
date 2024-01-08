@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(px4_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 file(GLOB_RECURSE SRC_FILE ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
@@ -20,6 +21,7 @@ ament_target_dependencies(sensor_reader_node
   rclcpp
   px4_msgs
   sensor_msgs
+  geometry_msgs
 )
 
 install(TARGETS

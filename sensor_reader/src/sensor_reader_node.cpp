@@ -6,12 +6,15 @@ SensorReader::SensorReader(): Node("sensor_reader_node"){
     initParams();
     rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
-    sub.imu = this->create_subscription<SensorCombinedMsg>("/fmu/out/sensor_combined", qos,
-                            std::bind(&SensorReader::readIMUCallback, this, _1));
-    sub.gps = this->create_subscription<SensorGpsMsg>("/fmu/out/vehicle_gps_position", qos,
-                            std::bind(&SensorReader::readGPSCallback, this, _1));
-    sub.vehcile_status = this->create_subscription<VehicleStatusMsg>("/fmu/out/vehicle_status", qos,
-                            std::bind(&SensorReader::vehicleStatusCallback, this, _1));
+    // sub.imu = this->create_subscription<SensorCombinedMsg>("/fmu/out/sensor_combined", qos,
+    //                         std::bind(&SensorReader::readIMUCallback, this, _1));
+    // sub.gps = this->create_subscription<SensorGpsMsg>("/fmu/out/vehicle_gps_position", qos,
+    //                         std::bind(&SensorReader::readGPSCallback, this, _1));
+    // sub.vehcile_status = this->create_subscription<VehicleStatusMsg>("/fmu/out/vehicle_status", qos,
+    //                         std::bind(&SensorReader::vehicleStatusCallback, this, _1));
+    sub.vehicle_local_pos = this->create_subscription<localPosMsg>("/fmu/out/vehicle_local_position", qos,
+                        std::bind(&SensorReader::vehicleLocalPosCallback, this, _1));
+    pub_ = this->create_publisher<twistMsg>("data_visual", 10);
 }
 
 void SensorReader::initParams(){
@@ -65,6 +68,29 @@ void SensorReader::vehicleStatusCallback(const VehicleStatusMsg::UniquePtr msg){
         RCLCPP_INFO(this->get_logger(), "USB Connected: %s", msg->usb_connected ? "true" : "false");
     }
 }
+
+void SensorReader::vehicleLocalPosCallback(const localPosMsg::UniquePtr msg){
+    twistMsg pub_data;
+    pub_data.linear.x =  -msg->z;
+    pub_data.linear.y =  -msg->vz;
+    pub_data.linear.z =  -abs(msg->az);
+    pub_->publish(pub_data);
+    
+    // status.pos.x = msg->x;
+	// status.pos.y = msg->y;
+	// status.pos.z = msg->z;
+
+    // status.vel.x = msg->vx;
+    // status.vel.y = msg->vy;
+    // status.vel.z = msg->vz;
+
+    // status.acc.x = msg->ax;
+    // status.acc.y = msg->ay;
+    // status.acc.z = msg->az;
+
+	// status.att.yaw = msg->heading;
+}
+
 
 int main(int argc, char *argv[]){
 	rclcpp::init(argc, argv);

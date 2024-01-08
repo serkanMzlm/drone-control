@@ -24,9 +24,19 @@ joy = Node(
         output='screen'
     )
 
+sensor_reader = Node(
+        package='sensor_reader',
+        executable='sensor_reader_node',
+        respawn=True,
+        output='screen'
+    )
+
 px4_connect = ExecuteProcess(
     cmd=["MicroXRCEAgent", "udp4", "-p",  "8888"]
 )
+
+
+##################################### BRIDGE #####################################
 
 out_camera = Node(
         package="ros_gz_bridge",
@@ -49,6 +59,7 @@ def generate_launch_description():
         px4_connect,
         joy,
         out_camera,
-        bottom_camera
+        bottom_camera,
+        sensor_reader
 	]
 )
